@@ -98,9 +98,12 @@ parcelRequire = (function (modules, cache, entry, globalName) {
 
   // Override the current require with this new one
   return newRequire;
-})({2:[function(require,module,exports) {
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+})({4:[function(require,module,exports) {
+"use strict";
 
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
 function createElement(tag, attrs) {
     for (var _len = arguments.length, children = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
         children[_key - 2] = arguments[_key];
@@ -117,7 +120,23 @@ var React = {
     createElement: createElement
 };
 
+exports.default = React;
+},{}],5:[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
 function _render(vnode, container) {
+    if (typeof vnode.tag == "function") {
+        var component = vnode.tag(vnode.attrs);
+        //console.log('component', vnode,component);
+        _render(component, container);
+        return;
+    }
     var tag = document.createElement(vnode.tag);
     if (vnode.attrs) {
         for (var key in vnode.attrs) {
@@ -136,6 +155,13 @@ function _render(vnode, container) {
     }
     container.appendChild(tag);
 }
+
+function createComponent(func, attrs) {
+    var component = func(attrs);
+    return component;
+}
+
+function setComponentProps(component, attrs) {}
 
 function setAttribute(dom, key, val) {
     if (key == "className") key = "class";
@@ -168,38 +194,63 @@ var ReactDOM = {
     }
 };
 
-var element = React.createElement(
-    "div",
-    { className: "wrap", onClick: function onClick(e) {
+exports.default = ReactDOM;
+},{}],2:[function(require,module,exports) {
+'use strict';
+
+var _React = require('./React.js');
+
+var _React2 = _interopRequireDefault(_React);
+
+var _ReactDOM = require('./ReactDOM.js');
+
+var _ReactDOM2 = _interopRequireDefault(_ReactDOM);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var element = _React2.default.createElement(
+    'div',
+    { className: 'wrap', onClick: function onClick(e) {
             alert(123);
         } },
-    "hello ",
-    React.createElement(
-        "span",
+    'hello ',
+    _React2.default.createElement(
+        'span',
         { style: { color: 'red' } },
-        "world ",
+        'world ',
         new Date().getTime()
     )
 );
 
+var ComA = function ComA(props) {
+    return _React2.default.createElement(
+        'div',
+        { style: { color: 'green' } },
+        props.name
+    );
+};
+
 console.log(element);
 
-setInterval(function () {
-    ReactDOM.render(React.createElement(
-        "div",
-        { className: "wrap", onClick: function onClick(e) {
-                alert(123);
-            } },
-        "hello ",
-        React.createElement(
-            "span",
-            { style: { color: 'red' } },
-            "world ",
-            new Date().toLocaleTimeString()
-        )
-    ), document.querySelector("#root"));
-}, 1000);
-},{}],6:[function(require,module,exports) {
+_ReactDOM2.default.render(_React2.default.createElement(
+    'div',
+    { className: 'wrap', onClick: function onClick(e) {
+            alert(123);
+        } },
+    'hello ',
+    _React2.default.createElement(
+        'span',
+        { style: { color: 'red' } },
+        'world ',
+        new Date().toLocaleTimeString()
+    ),
+    _React2.default.createElement(
+        ComA,
+        { name: 'ComAName' },
+        '111'
+    )
+), document.querySelector("#root"));
+},{"./React.js":4,"./ReactDOM.js":5}],10:[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 
@@ -228,7 +279,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = '' || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + '52261' + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + '61531' + '/');
   ws.onmessage = function (event) {
     var data = JSON.parse(event.data);
 
@@ -369,5 +420,5 @@ function hmrAccept(bundle, id) {
     return hmrAccept(global.parcelRequire, id);
   });
 }
-},{}]},{},[6,2], null)
+},{}]},{},[10,2], null)
 //# sourceMappingURL=/src.6ecbcb51.map
