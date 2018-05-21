@@ -1,27 +1,40 @@
-function render(vnode, container) {
+export function render(vnode, container) {
     if (typeof vnode.tag == "function") {
-        var component = vnode.tag(vnode.attrs);
-        //console.log('component', vnode,component);
-        render(component, container);
-        return;
-    }
-    var tag = document.createElement(vnode.tag);
-    if (vnode.attrs) {
-        for (var key in vnode.attrs) {
-            setAttribute(tag, key, vnode.attrs[key]);
-        }
-    }
-    if (vnode.children && vnode.children.length > 0) {
-        vnode.children.forEach(node => {
-            if (typeof node == "string" || typeof node == "number") {
-                var textNode = document.createTextNode(node);
-                tag.appendChild(textNode);
-            } else {
-                render(node, tag);
+        //console.log(vnode.tag);
+        var instance;
+        if (vnode.tag.render) {
+            instance = new vnode.tag(vnode.attrs);
+        } else {
+            instance = {
+                render: function () {
+                    return vnode.tag(vnode.attrs)
+                }
             }
-        })
+        }
+        if (instance.componentWillMount) {
+            instance.componentWillMount();
+        }
+        var component = instance.render();
+        render(component, container);
+    } else {
+        var tag = document.createElement(vnode.tag);
+        if (vnode.attrs) {
+            for (var key in vnode.attrs) {
+                setAttribute(tag, key, vnode.attrs[key]);
+            }
+        }
+        if (vnode.children && vnode.children.length > 0) {
+            vnode.children.forEach(node => {
+                if (typeof node == "string" || typeof node == "number") {
+                    var textNode = document.createTextNode(node);
+                    tag.appendChild(textNode);
+                } else {
+                    render(node, tag);
+                }
+            })
+        }
+        container.appendChild(tag);
     }
-    container.appendChild(tag);
 }
 
 function createComponent(func, attrs) {

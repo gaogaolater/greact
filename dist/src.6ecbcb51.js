@@ -104,6 +104,11 @@ parcelRequire = (function (modules, cache, entry, globalName) {
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
 function createElement(tag, attrs) {
     for (var _len = arguments.length, children = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
         children[_key - 2] = arguments[_key];
@@ -116,8 +121,32 @@ function createElement(tag, attrs) {
     };
 }
 
+var Component = function () {
+    function Component() {
+        var props = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
+        _classCallCheck(this, Component);
+
+        this.props = props;
+        this.state = {};
+    }
+
+    _createClass(Component, [{
+        key: "setState",
+        value: function setState(stateChange) {
+            Object.assign(this.state, stateChange);
+            renderComponent(this);
+        }
+    }]);
+
+    return Component;
+}();
+
+function renderComponent(component) {}
+
 var React = {
-    createElement: createElement
+    createElement: createElement,
+    Component: Component
 };
 
 exports.default = React;
@@ -130,30 +159,44 @@ Object.defineProperty(exports, "__esModule", {
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
+exports.render = _render;
 function _render(vnode, container) {
     if (typeof vnode.tag == "function") {
-        var component = vnode.tag(vnode.attrs);
-        //console.log('component', vnode,component);
-        _render(component, container);
-        return;
-    }
-    var tag = document.createElement(vnode.tag);
-    if (vnode.attrs) {
-        for (var key in vnode.attrs) {
-            setAttribute(tag, key, vnode.attrs[key]);
+        //console.log(vnode.tag);
+        var instance;
+        if (vnode.tag.render) {
+            instance = new vnode.tag(vnode.attrs);
+        } else {
+            instance = {
+                render: function render() {
+                    return vnode.tag(vnode.attrs);
+                }
+            };
         }
-    }
-    if (vnode.children && vnode.children.length > 0) {
-        vnode.children.forEach(function (node) {
-            if (typeof node == "string" || typeof node == "number") {
-                var textNode = document.createTextNode(node);
-                tag.appendChild(textNode);
-            } else {
-                _render(node, tag);
+        if (instance.componentWillMount) {
+            instance.componentWillMount();
+        }
+        var component = instance.render();
+        _render(component, container);
+    } else {
+        var tag = document.createElement(vnode.tag);
+        if (vnode.attrs) {
+            for (var key in vnode.attrs) {
+                setAttribute(tag, key, vnode.attrs[key]);
             }
-        });
+        }
+        if (vnode.children && vnode.children.length > 0) {
+            vnode.children.forEach(function (node) {
+                if (typeof node == "string" || typeof node == "number") {
+                    var textNode = document.createTextNode(node);
+                    tag.appendChild(textNode);
+                } else {
+                    _render(node, tag);
+                }
+            });
+        }
+        container.appendChild(tag);
     }
-    container.appendChild(tag);
 }
 
 function createComponent(func, attrs) {
@@ -198,6 +241,8 @@ exports.default = ReactDOM;
 },{}],2:[function(require,module,exports) {
 'use strict';
 
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
 var _React = require('./React.js');
 
 var _React2 = _interopRequireDefault(_React);
@@ -207,6 +252,12 @@ var _ReactDOM = require('./ReactDOM.js');
 var _ReactDOM2 = _interopRequireDefault(_ReactDOM);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 var element = _React2.default.createElement(
     'div',
@@ -230,7 +281,49 @@ var ComA = function ComA(props) {
     );
 };
 
-console.log(element);
+var ComB = function (_React$Component) {
+    _inherits(ComB, _React$Component);
+
+    function ComB(props) {
+        _classCallCheck(this, ComB);
+
+        return _possibleConstructorReturn(this, (ComB.__proto__ || Object.getPrototypeOf(ComB)).call(this, props));
+    }
+
+    _createClass(ComB, [{
+        key: 'componentWillMount',
+        value: function componentWillMount() {}
+    }, {
+        key: 'componentDidMount',
+        value: function componentDidMount() {}
+    }, {
+        key: 'componentWillUpdate',
+        value: function componentWillUpdate() {}
+    }, {
+        key: 'componentDidUpdate',
+        value: function componentDidUpdate() {}
+    }, {
+        key: 'componentWillUnmount',
+        value: function componentWillUnmount() {}
+    }, {
+        key: 'render',
+        value: function render() {
+            return _React2.default.createElement(
+                'div',
+                null,
+                _React2.default.createElement(
+                    'span',
+                    null,
+                    this.props.name
+                )
+            );
+        }
+    }]);
+
+    return ComB;
+}(_React2.default.Component);
+
+//console.log('comb',ComB);
 
 _ReactDOM2.default.render(_React2.default.createElement(
     'div',
@@ -244,13 +337,10 @@ _ReactDOM2.default.render(_React2.default.createElement(
         'world ',
         new Date().toLocaleTimeString()
     ),
-    _React2.default.createElement(
-        ComA,
-        { name: 'ComAName' },
-        '111'
-    )
+    _React2.default.createElement(ComA, { name: 'ComAName' }),
+    _React2.default.createElement(ComB, { name: 'ComBName' })
 ), document.querySelector("#root"));
-},{"./React.js":4,"./ReactDOM.js":5}],10:[function(require,module,exports) {
+},{"./React.js":4,"./ReactDOM.js":5}],14:[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 
@@ -279,7 +369,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = '' || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + '61531' + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + '56913' + '/');
   ws.onmessage = function (event) {
     var data = JSON.parse(event.data);
 
@@ -420,5 +510,5 @@ function hmrAccept(bundle, id) {
     return hmrAccept(global.parcelRequire, id);
   });
 }
-},{}]},{},[10,2], null)
+},{}]},{},[14,2], null)
 //# sourceMappingURL=/src.6ecbcb51.map
