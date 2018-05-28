@@ -45,13 +45,17 @@ class ComB extends React.Component {
 
 //console.log('comb',ComB);
 
-ReactDOM.render(
-    <div className="wrap" onClick={e => { alert(123) }}>
-        hello <span style={{ color: 'red' }}>world {new Date().toLocaleTimeString()}</span>
-        <ComA name="ComAName"></ComA>
-        <ComB name="ComBName"></ComB>
-    </div>,
-    document.querySelector("#root")
-);
+setInterval(() => {
+    ReactDOM.render(
+        <div className="wrap" onClick={e => { alert(123) }}>
+            hello <span style={{ color: 'red' }}>world {new Date().toLocaleTimeString()}</span>
+            <ComA name="ComAName"></ComA>
+            <ComB name="ComBName"></ComB>
+        </div>,
+        document.querySelector("#root")
+    );
+}, 1000)
+
+
 
 

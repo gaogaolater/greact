@@ -1,20 +1,16 @@
 export function render(vnode, container) {
     if (typeof vnode.tag == "function") {
         //console.log(vnode.tag);
-        var instance;
-        if (vnode.tag.render) {
-            instance = new vnode.tag(vnode.attrs);
-        } else {
-            instance = {
-                render: function () {
-                    return vnode.tag(vnode.attrs)
-                }
+        var component;
+        if (vnode.tag.prototype.render) {
+            let instance = new vnode.tag(vnode.attrs);
+            if (instance.componentWillMount) {
+                instance.componentWillMount();
             }
+            component = instance.render();
+        } else {
+            component = vnode.tag(vnode.attrs);
         }
-        if (instance.componentWillMount) {
-            instance.componentWillMount();
-        }
-        var component = instance.render();
         render(component, container);
     } else {
         var tag = document.createElement(vnode.tag);
