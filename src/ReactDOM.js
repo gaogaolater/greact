@@ -1,17 +1,23 @@
-export function render(vnode, container) {
+export function render(vnode) {
     if (typeof vnode.tag == "function") {
         //console.log(vnode.tag);
-        var component;
+        let component, dom
         if (vnode.tag.prototype.render) {
             let instance = new vnode.tag(vnode.attrs);
             if (instance.componentWillMount) {
                 instance.componentWillMount();
             }
             component = instance.render();
+            if (instance.componentDidMount) {
+                instance.componentDidMount();
+            }
+            dom = render(component);
+            instance.base = dom;
         } else {
             component = vnode.tag(vnode.attrs);
+            dom = render(component);
         }
-        render(component, container);
+        return dom;
     } else {
         var tag = document.createElement(vnode.tag);
         if (vnode.attrs) {
@@ -29,17 +35,14 @@ export function render(vnode, container) {
                 }
             })
         }
-        container.appendChild(tag);
+        return tag;
     }
 }
 
-function createComponent(func, attrs) {
-    var component = func(attrs);
-    return component;
-}
-
-function setComponentProps(component, attrs) {
-
+function renderCom(vnode,container){
+    container.innerHTML = "";
+    var dom = render(vnode);
+    container.appendChild(dom);
 }
 
 function setAttribute(dom, key, val) {
@@ -67,8 +70,7 @@ function setAttribute(dom, key, val) {
 let ReactDOM = {
     render(vnode, container) {
         if (vnode && container) {
-            container.innerHTML = "";
-            render(vnode, container);
+            renderCom(vnode, container);
         }
     }
 }

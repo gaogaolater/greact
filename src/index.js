@@ -14,6 +14,9 @@ const ComA = (props) => {
 class ComB extends React.Component {
     constructor(props) {
         super(props);
+        this.state = {
+            now: new Date().toLocaleTimeString()
+        }
     }
 
     componentWillMount() {
@@ -21,7 +24,11 @@ class ComB extends React.Component {
     }
 
     componentDidMount() {
-
+        // this.timer = setInterval(() => {
+        //     this.setState({
+        //         now: new Date().toLocaleTimeString()
+        //     });
+        // }, 1000);
     }
 
     componentWillUpdate() {
@@ -38,23 +45,21 @@ class ComB extends React.Component {
 
     render() {
         return <div>
-            <span>{this.props.name}</span>
+            <span>{this.props.name}:{this.state.now}</span>
         </div>
     }
 }
 
 //console.log('comb',ComB);
 
-setInterval(() => {
-    ReactDOM.render(
-        <div className="wrap" onClick={e => { alert(123) }}>
-            hello <span style={{ color: 'red' }}>world {new Date().toLocaleTimeString()}</span>
-            <ComA name="ComAName"></ComA>
-            <ComB name="ComBName"></ComB>
-        </div>,
-        document.querySelector("#root")
-    );
-}, 1000)
+ReactDOM.render(
+    <div className="wrap" onClick={e => { alert(123) }}>
+        hello <span style={{ color: 'red' }}>world</span>
+        <ComA name="ComAName"></ComA>
+        <ComB name="ComBName"></ComB>
+    </div>,
+    document.querySelector("#root")
+);
 
 
 

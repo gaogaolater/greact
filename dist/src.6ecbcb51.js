@@ -107,21 +107,28 @@ Object.defineProperty(exports, "__esModule", {
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
-exports.render = _render;
-function _render(vnode, container) {
+exports.render = render;
+function render(vnode) {
     if (typeof vnode.tag == "function") {
         //console.log(vnode.tag);
-        var component;
+        var component = void 0,
+            dom = void 0;
         if (vnode.tag.prototype.render) {
             var instance = new vnode.tag(vnode.attrs);
             if (instance.componentWillMount) {
                 instance.componentWillMount();
             }
             component = instance.render();
+            if (instance.componentDidMount) {
+                instance.componentDidMount();
+            }
+            dom = render(component);
+            instance.base = dom;
         } else {
             component = vnode.tag(vnode.attrs);
+            dom = render(component);
         }
-        _render(component, container);
+        return dom;
     } else {
         var tag = document.createElement(vnode.tag);
         if (vnode.attrs) {
@@ -135,20 +142,19 @@ function _render(vnode, container) {
                     var textNode = document.createTextNode(node);
                     tag.appendChild(textNode);
                 } else {
-                    _render(node, tag);
+                    render(node, tag);
                 }
             });
         }
-        container.appendChild(tag);
+        return tag;
     }
 }
 
-function createComponent(func, attrs) {
-    var component = func(attrs);
-    return component;
+function renderCom(vnode, container) {
+    container.innerHTML = "";
+    var dom = render(vnode);
+    container.appendChild(dom);
 }
-
-function setComponentProps(component, attrs) {}
 
 function setAttribute(dom, key, val) {
     if (key == "className") key = "class";
@@ -175,8 +181,7 @@ function setAttribute(dom, key, val) {
 var ReactDOM = {
     render: function render(vnode, container) {
         if (vnode && container) {
-            container.innerHTML = "";
-            _render(vnode, container);
+            renderCom(vnode, container);
         }
     }
 };
@@ -220,57 +225,17 @@ var Component = function () {
     _createClass(Component, [{
         key: 'setState',
         value: function setState(stateChange) {
+            //this.base.parentNode.removeChild(this.base);
             Object.assign(this.state, stateChange);
-            renderComponent(this);
+            var vnode = this.render();
+            var dom = (0, _ReactDOM.render)(vnode);
+            // console.log(this.base.parentNode);
+            // this.base.parentNode.replaceChild(this.base, dom);
         }
     }]);
 
     return Component;
 }();
-
-function renderComponent(component) {
-    var dom = component.render();
-    (0, _ReactDOM.render)(dom);
-}
-
-// function render(vnode, container) {
-//     if (typeof vnode.tag == "function") {
-//         //console.log(vnode.tag);
-//         var instance;
-//         if (vnode.tag.render) {
-//             instance = new vnode.tag(vnode.attrs);
-//         } else {
-//             instance = {
-//                 render: function () {
-//                     return vnode.tag(vnode.attrs)
-//                 }
-//             }
-//         }
-//         if (instance.componentWillMount) {
-//             instance.componentWillMount();
-//         }
-//         var component = instance.render();
-//         render(component, container);
-//     } else {
-//         var tag = document.createElement(vnode.tag);
-//         if (vnode.attrs) {
-//             for (var key in vnode.attrs) {
-//                 setAttribute(tag, key, vnode.attrs[key]);
-//             }
-//         }
-//         if (vnode.children && vnode.children.length > 0) {
-//             vnode.children.forEach(node => {
-//                 if (typeof node == "string" || typeof node == "number") {
-//                     var textNode = document.createTextNode(node);
-//                     tag.appendChild(textNode);
-//                 } else {
-//                     render(node, tag);
-//                 }
-//             })
-//         }
-//         container.appendChild(tag);
-//     }
-// }
 
 var React = {
     createElement: createElement,
@@ -327,7 +292,12 @@ var ComB = function (_React$Component) {
     function ComB(props) {
         _classCallCheck(this, ComB);
 
-        return _possibleConstructorReturn(this, (ComB.__proto__ || Object.getPrototypeOf(ComB)).call(this, props));
+        var _this = _possibleConstructorReturn(this, (ComB.__proto__ || Object.getPrototypeOf(ComB)).call(this, props));
+
+        _this.state = {
+            now: new Date().toLocaleTimeString()
+        };
+        return _this;
     }
 
     _createClass(ComB, [{
@@ -335,7 +305,13 @@ var ComB = function (_React$Component) {
         value: function componentWillMount() {}
     }, {
         key: 'componentDidMount',
-        value: function componentDidMount() {}
+        value: function componentDidMount() {
+            // this.timer = setInterval(() => {
+            //     this.setState({
+            //         now: new Date().toLocaleTimeString()
+            //     });
+            // }, 1000);
+        }
     }, {
         key: 'componentWillUpdate',
         value: function componentWillUpdate() {}
@@ -354,7 +330,9 @@ var ComB = function (_React$Component) {
                 _React2.default.createElement(
                     'span',
                     null,
-                    this.props.name
+                    this.props.name,
+                    ':',
+                    this.state.now
                 )
             );
         }
@@ -365,24 +343,21 @@ var ComB = function (_React$Component) {
 
 //console.log('comb',ComB);
 
-setInterval(function () {
-    _ReactDOM2.default.render(_React2.default.createElement(
-        'div',
-        { className: 'wrap', onClick: function onClick(e) {
-                alert(123);
-            } },
-        'hello ',
-        _React2.default.createElement(
-            'span',
-            { style: { color: 'red' } },
-            'world ',
-            new Date().toLocaleTimeString()
-        ),
-        _React2.default.createElement(ComA, { name: 'ComAName' }),
-        _React2.default.createElement(ComB, { name: 'ComBName' })
-    ), document.querySelector("#root"));
-}, 1000);
-},{"./React.js":3,"./ReactDOM.js":4}],5:[function(require,module,exports) {
+_ReactDOM2.default.render(_React2.default.createElement(
+    'div',
+    { className: 'wrap', onClick: function onClick(e) {
+            alert(123);
+        } },
+    'hello ',
+    _React2.default.createElement(
+        'span',
+        { style: { color: 'red' } },
+        'world'
+    ),
+    _React2.default.createElement(ComA, { name: 'ComAName' }),
+    _React2.default.createElement(ComB, { name: 'ComBName' })
+), document.querySelector("#root"));
+},{"./React.js":3,"./ReactDOM.js":4}],12:[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 
@@ -411,7 +386,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = '' || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + '58912' + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + '54600' + '/');
   ws.onmessage = function (event) {
     var data = JSON.parse(event.data);
 
@@ -552,5 +527,5 @@ function hmrAccept(bundle, id) {
     return hmrAccept(global.parcelRequire, id);
   });
 }
-},{}]},{},[5,2], null)
+},{}]},{},[12,2], null)
 //# sourceMappingURL=/src.6ecbcb51.map
