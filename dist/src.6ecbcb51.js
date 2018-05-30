@@ -142,7 +142,8 @@ function render(vnode) {
                     var textNode = document.createTextNode(node);
                     tag.appendChild(textNode);
                 } else {
-                    render(node, tag);
+                    var _dom = render(node);
+                    tag.appendChild(_dom);
                 }
             });
         }
@@ -188,7 +189,7 @@ var ReactDOM = {
 
 exports.default = ReactDOM;
 },{}],3:[function(require,module,exports) {
-'use strict';
+"use strict";
 
 Object.defineProperty(exports, "__esModule", {
     value: true
@@ -196,7 +197,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _ReactDOM = require('./ReactDOM');
+var _ReactDOM = require("./ReactDOM");
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -212,6 +213,8 @@ function createElement(tag, attrs) {
     };
 }
 
+var componentArray = [];
+
 var Component = function () {
     function Component() {
         var props = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
@@ -220,22 +223,70 @@ var Component = function () {
 
         this.props = props;
         this.state = {};
+        componentArray.push(this);
+        this._stateChangeArray = [];
     }
 
     _createClass(Component, [{
-        key: 'setState',
+        key: "setState",
         value: function setState(stateChange) {
-            //this.base.parentNode.removeChild(this.base);
-            Object.assign(this.state, stateChange);
-            var vnode = this.render();
-            var dom = (0, _ReactDOM.render)(vnode);
-            // console.log(this.base.parentNode);
-            // this.base.parentNode.replaceChild(this.base, dom);
+            //延迟执行setState
+            this._stateChangeArray.push(stateChange);
         }
     }]);
 
     return Component;
 }();
+
+if (flushTimer) {
+    clearInterval(flushTimer);
+}
+var flushTimer = setInterval(function () {
+    componentArray.forEach(function (com) {
+        var item = null;
+        var hasChange = false;
+        while (item = com._stateChangeArray.shift()) {
+            hasChange = true;
+            if (typeof item == "function") {
+                Object.assign(com.state, item.call(com, com.state));
+            } else {
+                Object.assign(com.state, item);
+            }
+        }
+        if (hasChange) {
+            var vnode = com.render();
+            var dom = (0, _ReactDOM.render)(vnode);
+            diff(dom, com.base);
+            com.base.parentNode.replaceChild(dom, com.base);
+            com.base = dom;
+        }
+    });
+}, 200);
+
+function diff(newDom, oldDom) {
+    //检查 节点类型，节点属性，节点事件，子节点
+    //console.log(newDom.tagName);
+    if (newDom.tagName == oldDom.tagName) {
+        //判断 增加或减少的dom
+
+    }
+}
+
+//状态队列
+// let stateQueue = [];
+
+// if (queueTimer) {
+//     clearInterval(queueTimer);
+// }
+// let queueTimer = setInterval(() => {
+//     let result = {};
+//     if (stateQueue.length > 0) {
+//         stateQueue.forEach(state => {
+//             Object.assign(result, state);
+//         })
+
+//     }
+// }, 200);
 
 var React = {
     createElement: createElement,
@@ -306,11 +357,13 @@ var ComB = function (_React$Component) {
     }, {
         key: 'componentDidMount',
         value: function componentDidMount() {
-            // this.timer = setInterval(() => {
-            //     this.setState({
-            //         now: new Date().toLocaleTimeString()
-            //     });
-            // }, 1000);
+            var _this2 = this;
+
+            this.timer = setInterval(function () {
+                _this2.setState({
+                    now: new Date().toLocaleTimeString()
+                });
+            }, 1000);
         }
     }, {
         key: 'componentWillUpdate',
@@ -386,7 +439,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = '' || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + '54600' + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + '63548' + '/');
   ws.onmessage = function (event) {
     var data = JSON.parse(event.data);
 

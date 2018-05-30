@@ -31,7 +31,8 @@ export function render(vnode) {
                     var textNode = document.createTextNode(node);
                     tag.appendChild(textNode);
                 } else {
-                    render(node, tag);
+                    let dom = render(node);
+                    tag.appendChild(dom);
                 }
             })
         }
@@ -39,7 +40,7 @@ export function render(vnode) {
     }
 }
 
-function renderCom(vnode,container){
+function renderCom(vnode, container) {
     container.innerHTML = "";
     var dom = render(vnode);
     container.appendChild(dom);

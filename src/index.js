@@ -24,11 +24,11 @@ class ComB extends React.Component {
     }
 
     componentDidMount() {
-        // this.timer = setInterval(() => {
-        //     this.setState({
-        //         now: new Date().toLocaleTimeString()
-        //     });
-        // }, 1000);
+        this.timer = setInterval(() => {
+            this.setState({
+                now: new Date().toLocaleTimeString()
+            });
+        }, 1000);
     }
 
     componentWillUpdate() {
